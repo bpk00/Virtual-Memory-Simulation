@@ -1,0 +1,7 @@
+logical-address
+page-number-offset
+no-page-fault
+physical-address-calculation
+page-fault
+free-frames-available
+no-free-frames
