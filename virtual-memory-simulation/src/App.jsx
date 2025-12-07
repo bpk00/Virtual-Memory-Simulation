@@ -20,6 +20,12 @@ function App() {
   const [nextFreeFrame, setNextFreeFrame] = useState(0);
   const [pageFaultMessage, setPageFaultMessage] = useState("");
   const [enteredAddresses, setEnteredAddresses] = useState([]);
+  
+  // for steps section to highlight active steps
+  const [activeStep, setActiveStep] = useState(""); 
+  const getHighlight = (id) => {
+    return activeStep.includes(id) ? "bg-yellow-100 shadow-xl border border-yellow-500" : "";
+  };
 
   // Function for Enter Btn
   const handleEnter = () => {
@@ -35,6 +41,11 @@ function App() {
       alert(`Invalid logical address! Maximum allowed is ${maxLogicalAddress}.`);
       return;
     }
+    // Check if positive logicalAddress
+    if (isNaN(la) || la < 0) {
+      alert("Please enter a valid non-negative number.");
+      return;
+    }
 
     let frameNum = null;
     let physAddr = null;
@@ -45,16 +56,34 @@ function App() {
     const newPT = [...pageTable];
     const newFT = [...frameTable];
 
+    // For Steps section to highlight steps
+    // Determine which steps are active
+    const stepsActive = {
+      "logical-address": true,
+      "page-number-offset": true,
+      "physical-address-calculation": true,
+      "no-page-fault": false,
+      "page-fault": false,
+      "free-frames-available": false,
+      "no-free-frames": false,
+    };
+
     // Check if page is already in memory
-    if (pageTable[pageNum].assigned) {
+    if (newPT[pageNum].assigned) {
       // Page already in memory: no page fault
       frameNum = pageTable[pageNum].frame;
       physAddr = frameNum * PAGE_SIZE + offset;
       pageFault = false;
       pageFaultMsg = `Page ${pageNum} is already in memory (Frame ${frameNum}).`;
+    
+      // Highlight no page fault step
+      stepsActive["no-page-fault"] = true;
     } else {
       // Page fault occurs
       pageFault = true;
+
+      // Highlight page fault
+      stepsActive["page-fault"] = true;
 
       if (nextFreeFrame < NUM_FRAMES) {
         // If a free frame is available, load the page
@@ -71,11 +100,21 @@ function App() {
         setNextFreeFrame(nextFreeFrame + 1);
 
         pageFaultMsg = `Page Fault! Page ${pageNum} was not in memory and has been loaded into Frame ${frameNum}.`;
+
+        // Highlight free frame step
+        stepsActive["free-frames-available"] = true;
       } else {
         // No free frames available
         pageFaultMsg = `Page Fault! Page ${pageNum} not in memory, but no free frames available.`;
+
+        // Highlight no free frames step
+        stepsActive["no-free-frames"] = true;
       }
     }
+
+    // Update active steps in one go
+    const activeStepIds = Object.keys(stepsActive).filter(id => stepsActive[id]);
+    setActiveStep(activeStepIds); // store as array
 
     // Display page fault message
     setPageFaultMessage(pageFaultMsg);
@@ -91,6 +130,7 @@ function App() {
         physicalAddress: physAddr,
         pageFault,
         message: pageFaultMsg,
+        assigned: newPT[pageNum].assigned
       },
     ]);
 
@@ -105,6 +145,7 @@ function App() {
     setNextFreeFrame(0);
     setPageFaultMessage("");
     setEnteredAddresses([]);
+    setActiveStep("");
   };
 
   // Last entered address
@@ -315,7 +356,7 @@ function App() {
               <p className='text-center text-4xl font-bold'>↓</p>
 
               {/* Logical Address*/}
-              <div id='logical-address' className="flex flex-col items-center justify-center bg-[#EDEDED] rounded-lg p-4 pb-5 w-full gap-2">
+              <div id='logical-address' className={`flex flex-col items-center justify-center bg-[#EDEDED] rounded-lg p-4 pb-5 w-full gap-2 ${getHighlight("logical-address")}`}>
                 <p className="font-semibold">Logical Address</p>
                 <p className="bg-[#E5F6FF] shadow px-2 rounded w-[120px] text-center">{lastEntry.logicalAddress ?? "-"}</p>
               </div>
@@ -326,7 +367,7 @@ function App() {
               <p className='text-center text-4xl font-bold'>↓</p>
 
               {/* Calculations for Page no. and Offset*/}
-              <div id='page-number-offset' className="flex flex-col items-center justify-center bg-[#EDEDED] rounded-lg p-4 w-full gap-2">
+              <div id='page-number-offset' className={`flex flex-col items-center justify-center bg-[#EDEDED] rounded-lg p-4 w-full gap-2 ${getHighlight("page-number-offset")}`}>
                 <p className="font-bold mb-5 mt-5 text-[#164E87] text-lg">Calculating Page no. & Offset</p>
 
                 {/* Page No. */}
@@ -372,12 +413,12 @@ function App() {
               {/* Page Fault Handling */}
               <div className='flex flex-row w-full gap-10'>
                 {/* No Page Fault */}
-                <div id='no-page-fault' className='flex flex-col justify-start items-center pl-5 pr-5 bg-blue-100 py-5 rounded-lg w-1/2'>
+                <div id='no-page-fault' className={`flex flex-col justify-start items-center pl-5 pr-5 bg-blue-100 py-5 rounded-lg w-1/2 ${getHighlight("no-page-fault")}`}>
                   <p className='border border-black rounded-md text-center font-semibold w-1/2 px-10 py-2'>When Page Number is in Page Table</p>
                   <p className='text-center text-4xl font-bold'>↓</p>
                   <p className='bg-[#CFCFCF] py-2 px-5 rounded-md font-semibold text-lg'>No Page Fault</p>
                   <p className='text-center text-4xl font-bold'>↓</p>
-                  <div id='physical-address-calculation' className="flex flex-col items-center justify-center bg-[#EDEDED] rounded-lg p-4 w-full gap-2">
+                  <div id='physical-address-calculation' className={`flex flex-col items-center justify-center bg-[#EDEDED] rounded-lg p-4 w-full gap-2 ${getHighlight("physical-address-calculation")}`}>
                     {/* Read Frame Number */}
                     <div className="flex flex-col items-center justify-center p-4 w-full gap-2">
                       <p className="font-semibold">Read Frame Number:</p>
@@ -403,7 +444,7 @@ function App() {
                 </div>
 
                 {/* Page Fault */}
-                <div id='page-fault' className='flex flex-col justify-start items-center pl-5 pr-5 bg-blue-100 py-5 rounded-lg w-1/2'>
+                <div id='page-fault' className={`flex flex-col justify-start items-center pl-5 pr-5 bg-blue-100 py-5 rounded-lg w-1/2' ${getHighlight("page-fault")}`}>
                   <p className='border border-black rounded-md text-center font-semibold w-1/2 px-10 py-2'>When Page Number is not in Page Table</p>
                   <p className='text-center text-4xl font-bold'>↓</p>
                   <p className='bg-[#FFC5C8] py-2 px-5 rounded-md font-semibold text-lg'>Page Fault</p>
@@ -421,7 +462,7 @@ function App() {
                   {/* Page Fault Handling */}
                   <div className='flex flex-row gap-5 justify-center'>
                     {/* Free Frame Available */}
-                    <div id='free-frames-available' className="flex flex-col items-center justify-start bg-[#EDEDED] rounded-lg p-4 w-1/2 gap-2">
+                    <div id='free-frames-available' className={`flex flex-col items-center justify-start bg-[#EDEDED] rounded-lg p-4 w-1/2 gap-2 ${getHighlight("free-frames-available")}`}>
                       <p className='text-center py-2 px-5 border border-black rounded-lg'>Free Frames Available</p>
                       <p className='text-center text-4xl font-bold'>↓</p>
                       <p className='text-center'>Load page to free frame</p>
@@ -443,7 +484,7 @@ function App() {
                       </table>                     
                     </div>
                     {/* Free Frames Not Available */}
-                    <div id='no-free-frames' className="flex flex-col items-center justify-start bg-[#EDEDED] rounded-lg p-4 w-1/2 gap-2">
+                    <div id='no-free-frames' className={`flex flex-col items-center justify-start bg-[#EDEDED] rounded-lg p-4 w-1/2 gap-2 ${getHighlight("no-free-frames")}`}>
                       <p className='text-center py-2 px-5 border border-black rounded-lg'>Free Frames not Available</p>
                       <p className='text-center text-4xl font-bold'>↓</p>
                       <p className='text-center'>Message:</p>
@@ -461,4 +502,4 @@ function App() {
   )
 }
 
-export default App
+export default App 
