@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import pc from './assets/PC.svg';
-import error from './assets/Error.svg';
+import error from './assets/Error.svg'; 
 import './App.css';
 
 function App() {
@@ -304,9 +304,9 @@ function App() {
           <div id="next-frame" className="flex flex-col items-center justify-evenly bg-[#EDEDED]/[0.59] rounded-lg p-4 w-full h-full">
             <img src={pc} alt="PC Image" className='w-full p-5'/> 
 
-            <div className="flex justify-between w-full mb-1">
+            <div className="flex justify-between w-full mb-1 items-center">
               <p className="text-[#005E90]">Next Available Frame No:</p>
-              <p className="bg-[#E5F6FF] shadow px-2 rounded w-[80px] text-center">
+              <p className="bg-[#E5F6FF] shadow py-5 px-10 rounded w-[150px] text-center">
                 {nextFreeFrame < NUM_FRAMES ? nextFreeFrame : "None"}
               </p>
             </div>
@@ -314,8 +314,8 @@ function App() {
         </section>
 
         {/* Entered Logical Addresses */}
-        <section className="flex flex-col items-center bg-[#EDEDED]/[0.59] rounded-lg p-4 w-full">
-          <p className="font-semibold mb-2">Entered Logical Addresses</p>
+        <section className="container mx-auto text-center items-center bg-[#EDEDED]/[0.59] rounded-lg p-4 w-full px-10 pb-15">
+          <p className="font-semibold mb-2 text-xl py-5">Entered Logical Addresses</p>
           <table className='w-full border-collapse rounded-lg overflow-hidden shadow'>
             <thead className='bg-[#164E87] text-white'>
               <tr>
